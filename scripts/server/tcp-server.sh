@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Launches standard Iperf3 server at a given port with a screen
-BIND_HOST="localhost"
+BIND_HOST=130.104.229.25
 
 Help()
 {

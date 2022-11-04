@@ -2,7 +2,6 @@ all: setup
 
 # Install the required packages
 setup: set-folders
-	apt update
 	apt -y install iperf3
 	apt -y install mptcpize
 	chmod -R +x scripts/
@@ -24,5 +23,8 @@ clean:
 	rm -fr logs/*
 	rmdir logs
 
-run-tcp-client: setup
-	./scripts/client/tcp-client.sh
+run-clients: setup
+	@echo "Running the standard TCP Client"
+	./scripts/client/tcp-client.sh -p 80
+	@echo "Running the mptcpized standard TCP Client"
+	mptcpize run ./scripts/client/tcp-client.sh -p 443

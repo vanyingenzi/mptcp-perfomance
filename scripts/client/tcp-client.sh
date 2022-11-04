@@ -21,7 +21,7 @@ while getopts ":p:s:h" option; do
             Help
             exit;;
         p)
-            PORT_NUMBER=${OPTARG} ;;
+            SERVER_PORT=${OPTARG} ;;
         s)
             SERVER_HOST=${OPTARG} ;;
         \?) # incorrect option

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Launches standard Iperf3 client
-SERVER_HOST="130.104.229.25"
+SERVER_HOST="tfe-ingenzi-mbogne.info.ucl.ac.be"
 SERVER_PORT=80
 
 Help()

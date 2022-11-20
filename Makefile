@@ -17,6 +17,11 @@ set-folders:
 	else\
 		mkdir --mode=777 logs;\
 	fi
+	if [ ! -d "../iperf/src/iperf3" ]; then\
+		echo "Seems that iperf3 is not set at the expected directory.";\
+		exit 1;\
+	fi
+	chmod -R +x scripts/
 	chmod -R +x scripts/
 
 clean:

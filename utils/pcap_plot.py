@@ -29,7 +29,7 @@ if __name__ == "__main__":
         plt.plot( timestamps, data, label=f"flow ({idx+1}) : {dataset.src_addr}<->{dataset.dest_addr}" )
     
     plt.title("The throughput by each MPTCP subflow as seen by TCPDump")
-    plt.ylabel("Throughput (bytes/sec)")
+    plt.ylabel("Throughput (bits/sec)")
     plt.xlabel("Timestamp")
     plt.legend()
     plt.show()

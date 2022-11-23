@@ -59,7 +59,7 @@ def process_pcap(file_name: str) -> List[ProcessingPacket]:
                                                     tcp_pkt.sport, 
                                                     tcp_pkt.dport, 
                                                     (pkt_metadata.sec * 1000000) + pkt_metadata.usec,
-                                                    len(tcp_pkt.payload)
+                                                    len(tcp_pkt.payload) * 8 # To convert to bits
                                                 )
         
         packets.append(process_packet)

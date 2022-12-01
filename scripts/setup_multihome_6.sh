@@ -30,22 +30,18 @@ done
 
 function echo_debug {
     if [ "${DEBUG}" == "1" ]; then
-        echo -e "$1"
+        echo -e "$1" >&2
     fi
 }
 
 function echo_command {
     if [ "${QUIET}" == "0" ]; then
-        echo -e "${YELLOW}${1}${NC}"
+        echo -e "${YELLOW}${1}${NC}" >&2
     fi
 }
 
 YELLOW='\033[0;33m'     
 NC='\033[0m'
-
-# First drop current ip mptcp endpoints
-echo_command "ip mptcp endpoint flush"
-ip mptcp endpoint flush
 
 #---  FUNCTION  ----------------------------------------------------------------
 #          NAME:  getInterfaces
@@ -97,6 +93,35 @@ function get_next_table_number {
 function get_address_without_prefix {
     echo "$1" | awk -F "/" '{print $1}'
 }
+
+#---  FUNCTION  ----------------------------------------------------------------
+#          NAME:  get_interface_status
+#   DESCRIPTION:  Returns the status of the interface
+#-------------------------------------------------------------------------------
+function get_interface_status {
+    echo `cat /sys/class/net/${1}/operstate`
+}
+
+
+#---  FUNCTION  ----------------------------------------------------------------
+#          NAME:  get_up_interfaces
+#   DESCRIPTION:  Perfoms a check up to see if it's multihoming host
+#-------------------------------------------------------------------------------
+function get_up_interfaces {
+    COUNT=0
+    for interface in $(get_interfaces); do
+        if [ "${interface}" != "lo" ] && [ "$(get_interface_status ${interface})" == "up" ]; then
+            let COUNT=COUNT+1
+        fi
+    done
+    echo_debug "The number of up interfaces (except local) $COUNT"
+    echo $COUNT
+}
+
+if [ $(get_up_interfaces) -lt "2" ]; then
+    echo "The number of up interfaces is lower than 2 ... not a multihomed environment." >&2
+    exit 1
+fi
 
 for interface in $(get_interfaces); do
     addresses=$(get_addr_4_interface ${interface})

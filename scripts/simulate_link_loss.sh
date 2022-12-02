@@ -34,9 +34,9 @@ if [ -z "${DELAY}" ] || [ -z "${ETH}" ]; then
     exit 1
 fi
 
-ip link set ${ETH} down
+ifdown ${ETH}
 if [ "$?" != "0" ]; then 
     exit 1
 fi
 sleep "${DELAY}"
-ip link set ${ETH} up
+ifup ${ETH}

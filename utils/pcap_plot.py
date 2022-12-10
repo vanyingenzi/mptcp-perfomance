@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from pcap_distribution import per_connection_data as standard_per_connection
 from pcap_CookedLinux_distribution import per_connection_data as cooked_linux_per_connection
 
-PCAP_FILE="./logs/tcpdump.pcap"
+PCAP_FILE="./logs/aggregation/c2s/1/tcpdump.pcap"
 
 
 def resample_data_by_interval(timestamps, payload_lens, interval=1000000):
@@ -27,6 +27,10 @@ if __name__ == "__main__":
     data = cooked_linux_per_connection(PCAP_FILE)
     for idx, dataset in enumerate(data):
         new_timestamps, new_data = resample_data_by_interval(  dataset.timestamps, dataset.payload_len )
+        print(dataset.addresses)
+        print(new_timestamps)
+        print(new_data)
+        print("\n\n------")
         plt.plot( new_timestamps, new_data, label=f"flow ({idx+1}) : {dataset.src_addr}<->{dataset.dest_addr}" )
     
     plt.title("The throughput for each MPTCP subflow as seen by TCPDump")

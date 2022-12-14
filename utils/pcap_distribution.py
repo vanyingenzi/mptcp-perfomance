@@ -73,7 +73,7 @@ def per_connection_data(filename: str) -> Set[ConnectionData]:
     for packet in packets:
         addresses = packet.get_addresses()
         if addresses not in connections:
-            connections[addresses] = ConnectionData( addresses, packet.src_addr, packet.dest_addr, packet.src_port, packet.dest_port, [], [])
+            connections[addresses] = ConnectionData( packet.src_addr, packet.dest_addr, packet.src_port, packet.dest_port, addresses, [], [])
         connections[addresses].timestamps.append(packet.timestamp)
         connections[addresses].payload_len.append(packet.payload_len)
     return connections.values()

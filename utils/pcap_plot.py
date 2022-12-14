@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from pcap_distribution import per_connection_data as standard_per_connection
 from pcap_CookedLinux_distribution import per_connection_data as cooked_linux_per_connection
 
-PCAP_FILE="./logs/aggregation/c2s/1/tcpdump.pcap"
+PCAP_FILE="./logs/temporal_loss.pcap"
 
 
 def resample_data_by_interval(timestamps, payload_lens, interval=1000000):

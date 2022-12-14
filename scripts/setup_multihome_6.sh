@@ -3,6 +3,11 @@
 DEBUG=0
 QUIET=0
 
+if [[ $EUID -ne 0 ]]; then
+   echo "You must run this script as root."
+   exit 1
+fi
+
 function Help {
    echo "Sets up multihoming on a linux host" >&2
    echo >&2
@@ -123,6 +128,10 @@ if [ $(get_up_interfaces) -lt "2" ]; then
     exit 1
 fi
 
+echo_command "ip mptcp endpoint flush"
+ip mptcp endpoint flush
+ENDPOINT_ID=1
+
 for interface in $(get_interfaces); do
     addresses=$(get_addr_4_interface ${interface})
     gateway=$(get_gateway ${interface})
@@ -137,9 +146,15 @@ for interface in $(get_interfaces); do
             ip -6 rule add from $(get_address_without_prefix ${address_prefix}) table ${table_number}
             echo_command "ip -6 route add ${address_prefix} dev ${interface} scope link table ${table_number}"
             ip -6 route add ${address_prefix} dev ${interface} scope link table ${table_number}
+            echo_command "ip mptcp endpoint add $(get_address_without_prefix ${address_prefix}) id ${ENDPOINT_ID} dev ${interface} subflow signal"
+            ip mptcp endpoint add $(get_address_without_prefix ${address_prefix}) id ${ENDPOINT_ID} dev ${interface} subflow signal
+            let ENDPOINT_ID=ENDPOINT_ID+1
         done
         echo_command "ip -6 route add default via ${gateway} dev ${interface} table ${table_number}"
         ip -6 route add default via ${gateway} dev ${interface} table ${table_number}
         echo_debug "-----"
     fi
 done
+
+echo_command "ip mptcp limits set add_addr_accepted 8 subflows 8"
+ip mptcp limits set add_addr_accepted 8 subflows 8

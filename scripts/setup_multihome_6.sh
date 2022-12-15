@@ -58,10 +58,10 @@ function get_interfaces {
 
 #---  FUNCTION  ----------------------------------------------------------------
 #          NAME:  get_addr_4_interface
-#   DESCRIPTION:  Lists Ipv6 address with prefixes for a given interface
+#   DESCRIPTION:  Lists Ipv6 address gloabal dynamic with prefixes for a given interface
 #-------------------------------------------------------------------------------
 function get_addr_4_interface {
-    echo `ip -6 addr show dev $1 | grep global | awk -F "scope" '{print $1}'| awk -F " " '{print $2}'`
+    echo `ip -6 addr show dev $1 | grep "global dynamic" | awk -F "scope" '{print $1}'| awk -F " " '{print $2}'`
 }
 
 #---  FUNCTION  ----------------------------------------------------------------

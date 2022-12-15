@@ -1,9 +1,10 @@
 
 #------------- Variables
 MAKE=$(shell which make)
-ECHO=$(shell which echo)
+PRINTF=$(shell which printf)
 COLOR_ANNOUNCE='\033[0;36m'
 NC='\033[0m'
+PYTHON=$(shell which python3)
 #------------- 
 
 all: setup
@@ -13,11 +14,10 @@ setup: set-folders
 	apt -y install mptcpize
 	chmod -R +x scripts/
 	cd ./iperf && ./configure && $(MAKE)
-	rm ./scripts/iperf3 && ln -s ./iperf/src/iperf3 ./scripts/iperf3
-
+	ln -s ./iperf/src/iperf3 ./scripts/iperf3
 
 check-mptcp:
-	@echo "Kernel version = `uname -r`"
+	@(PRINTF) "Kernel version = `uname -r`"
 	sysctl -a | grep mptcp
 	ip mptcp limits show
 
@@ -28,14 +28,25 @@ set-folders:
 		mkdir --mode=777 logs;\
 	fi
 	chmod -R +x scripts/
+	chmod -R +x utils/
 
-clean:
+clean: clean-logs
+	cd ./iperf && $(MAKE) clean
+	rm ./scripts/iperf3 
+
+clean-logs:
 	if [ -d "./logs/" ]; then\
 		rm -fr logs/*;\
 		rmdir logs;\
 	fi
-	cd ./iperf && $(MAKE) clean
 
 run-tcp-baseline: 
-	@$(ECHO) -e "${COLOR_ANNOUNCE}------------------ TCP Baseline ------------------${NC}"
-	./scripts/tcp_baseline.sh -d tfe-ingenzi-mbogne.info.ucl.ac.be -p 80
+	@$(PRINTF) "${COLOR_ANNOUNCE}------------------ TCP Baseline (w/ 2001:6a8:308f:9:0:82ff:fe68:e519) ------------------${NC}\n"
+	./scripts/tcp_baseline.sh -d 2001:6a8:308f:9:0:82ff:fe68:e519 -p 80 -n 1
+	@$(PRINTF) "${COLOR_ANNOUNCE}------------------ TCP Baseline (w/ 2001:6a8:308f:9:0:82ff:fe68:e55c) ------------------${NC}\n"
+	./scripts/tcp_baseline.sh -d 2001:6a8:308f:9:0:82ff:fe68:e55c -p 80 -n 1
+	@$(PRINTF) "${COLOR_ANNOUNCE}------------------ TCP Baseline (w/ 2001:6a8:308f:10:0:83ff:fe00:2) ------------------${NC}\n"
+	./scripts/tcp_baseline.sh -d 2001:6a8:308f:10:0:83ff:fe00:2 -p 80 -n 1
+
+visualise-tcp-baseline:
+	@$(PYTHON) ./utils/json_throughput_plot.py 

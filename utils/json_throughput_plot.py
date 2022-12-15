@@ -1,15 +1,17 @@
 import json
 from dataclasses import dataclass
 from typing import List
-import pandas as pd
-import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import figure
+import sys
+import os
+from typing import Dict
+from collections import defaultdict
 
-figure(figsize=(21, 6), dpi=80)
+DefaultListDict = lambda: defaultdict(list)
 
-sns.set_theme()
+PLOT_JSON_FILE = "./utils/json_throughout_plot.json"
 
 @dataclass
 class IPerfIntervalThroughputData:
@@ -17,21 +19,12 @@ class IPerfIntervalThroughputData:
     bits_per_second:    List[float]
 
 
-C2S_LOG_FILES = [
-    "logs/backup/c2s/1/iperf_server_output.json",
-    "logs/backup/c2s/2/iperf_server_output.json",
-    "logs/backup/c2s/3/iperf_server_output.json", 
-    "logs/backup/c2s/4/iperf_server_output.json"
-]
+def get_plot_configure(CONF_FILE):
+    with open(CONF_FILE) as file:
+        dct = json.load(file)
+    return dct
 
-S2C_LOG_FILES = [
-    "logs/backup/s2c/1/iperf_server_output.json",
-    "logs/backup/s2c/2/iperf_server_output.json",
-    "logs/backup/s2c/3/iperf_server_output.json",
-    "logs/backup/s2c/4/iperf_server_output.json"
-]
-
-def get_mean_min_max(LOG_FILES):
+def calculate_the_plot(LOG_FILES):
     y = []
     for LOG_FILE in LOG_FILES:
         with open(LOG_FILE) as file:
@@ -40,7 +33,7 @@ def get_mean_min_max(LOG_FILES):
         if (len(extracted_data.bits_per_second) > 120):
             extracted_data.bits_per_second = extracted_data.bits_per_second[:120]
         y.append(extracted_data.bits_per_second)
-    return np.average(y, axis=0), np.median(y, axis=0), np.amin(y, axis=0), np.amax(y, axis=0)
+    return {"mean": np.average(y, axis=0), "meadian": np.median(y, axis=0), "min": np.amin(y, axis=0), "max": np.amax(y, axis=0) }
 
 def per_interval_throughput(json_intervals) -> IPerfIntervalThroughputData:
     to_return = IPerfIntervalThroughputData([], [])
@@ -49,19 +42,32 @@ def per_interval_throughput(json_intervals) -> IPerfIntervalThroughputData:
         to_return.bits_per_second.append(interval["sum"]["bits_per_second"])
     return to_return
 
+def handle_subplot(ax: plt.Axes, json_conf: Dict[str, any]):
+    dct = DefaultListDict()
+    files = [ os.path.join(subplot_conf["dir"], file) for file in os.listdir(subplot_conf["dir"]) if file[-4:] == "json" ]
+    if "group" in json_conf:
+        for filepath in files:
+            file = os.path.basename(filepath)
+            key = eval(subplot_conf["group"]["code"])
+            dct[key].append(filepath)
+    else: 
+        dct[subplot_conf["calculate"]] = files
+
+    for key, values in dct.items():
+        data = calculate_the_plot(values)
+        ax.plot(data[subplot_conf["calculate"]], label=key)
+        ax.legend()
+    ax.set(xlabel=subplot_conf["x_label"], ylabel=subplot_conf["y_label"], title=subplot_conf["title"])
+
 if __name__ == '__main__':
-    x = np.arange(1, 121)
-    c2s_mean, c2s_median, c2s_min, c2s_max = get_mean_min_max(C2S_LOG_FILES)
-    plt.plot(x, c2s_mean, label="Average client to Server", color="blue")
-    plt.plot(x, c2s_median, linestyle='dashed', label="Median client to Server", color="blue")
-    plt.fill_between(x, c2s_min, c2s_max, alpha=0.2, facecolor="blue", edgecolor="blue")
-    s2c_mean, s2c_median, s2c_min, s2c_max = get_mean_min_max(S2C_LOG_FILES)
-    plt.plot(x, s2c_mean, label="Average Server to Client", color="orange")
-    plt.plot(x, s2c_median, linestyle='dashed', label="Median Server to Client", color="orange")
-    plt.fill_between(x, s2c_min, s2c_max, alpha=0.2, facecolor="orange", edgecolor="orange")
-    plt.legend()
-    plt.title("The average throughput during the transfer")
-    plt.ylabel("Throughput (bits/sec)")
-    plt.xlabel("Time[s]")
-    print(f"{np.mean(c2s_mean)} {np.mean(s2c_mean)}" )
+    if len(sys.argv) == 2:
+        PLOT_JSON_FILE = sys.argv[1]
+    PLOT_JSON = get_plot_configure(PLOT_JSON_FILE)
+    if len(PLOT_JSON["subplots"]) <= 1:
+        figure(figsize=(21, 6), dpi=80)
+    else:
+        fig, axes = plt.subplots(1, len(PLOT_JSON["subplots"]), sharex=True, sharey=True, figsize=(21, 6), dpi=80)
+        for idx, subplot_conf in enumerate(PLOT_JSON["subplots"]):
+            handle_subplot(axes[idx], subplot_conf)
+        fig.suptitle(PLOT_JSON["title"])
     plt.show()

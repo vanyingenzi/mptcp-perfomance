@@ -16,7 +16,6 @@ VNETH1_ADDR_NAMESPACE=fd00::2
 
 IP6TABLE_NAME=mptcp_test_nat
 
-
 ip netns del ${NETSNAME}
 ip netns add ${NETSNAME}
 

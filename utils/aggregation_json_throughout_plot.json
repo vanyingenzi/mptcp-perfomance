@@ -1,0 +1,13 @@
+{
+    "title": "MPTCP links aggregation tests",
+    "subplots": [
+        {
+            "dir": "./logs/aggregation",
+            "title": "The throughput along the transfer with Multipath TCP", 
+            "y_label": "Throughput [bits/sec]",
+            "x_label": "Time[s]",
+            "calculate": ["mean", "median"], 
+            "fill": true
+        }
+    ]
+}

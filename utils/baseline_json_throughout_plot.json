@@ -9,7 +9,7 @@
             "group": {
                 "code": "file.split('-')[0]"
             },
-            "calculate": "mean"
+            "calculate": ["mean"]
         }, 
         {
             "dir": "./logs/tcp_baseline/2001_6a8_308f_9_0_82ff_fe68_e519", 
@@ -19,7 +19,7 @@
             "group": {
                 "code": "file.split('-')[0]"
             },
-            "calculate": "mean"
+            "calculate": ["mean"]
         }, 
         {
             "dir": "./logs/tcp_baseline/2001_6a8_308f_10_0_83ff_fe00_2", 
@@ -29,7 +29,7 @@
             "group": {
                 "code": "file.split('-')[0]"
             },
-            "calculate": "mean"
+            "calculate": ["mean"]
         }
     ]
 }

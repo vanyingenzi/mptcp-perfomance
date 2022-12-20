@@ -11,7 +11,7 @@ from collections import defaultdict
 
 DefaultListDict = lambda: defaultdict(list)
 
-PLOT_JSON_FILE = "./utils/json_throughout_plot.json"
+PLOT_JSON_FILE = "./utils/aggregation_json_throughout_plot.json"
 
 @dataclass
 class IPerfIntervalThroughputData:
@@ -33,7 +33,7 @@ def calculate_the_plot(LOG_FILES):
         if (len(extracted_data.bits_per_second) > 120):
             extracted_data.bits_per_second = extracted_data.bits_per_second[:120]
         y.append(extracted_data.bits_per_second)
-    return {"mean": np.average(y, axis=0), "meadian": np.median(y, axis=0), "min": np.amin(y, axis=0), "max": np.amax(y, axis=0) }
+    return {"mean": np.average(y, axis=0), "median": np.median(y, axis=0), "min": np.amin(y, axis=0), "max": np.amax(y, axis=0) }
 
 def per_interval_throughput(json_intervals) -> IPerfIntervalThroughputData:
     to_return = IPerfIntervalThroughputData([], [])
@@ -44,27 +44,32 @@ def per_interval_throughput(json_intervals) -> IPerfIntervalThroughputData:
 
 def handle_subplot(ax: plt.Axes, json_conf: Dict[str, any]):
     dct = DefaultListDict()
-    files = [ os.path.join(subplot_conf["dir"], file) for file in os.listdir(subplot_conf["dir"]) if file[-4:] == "json" ]
+    files = [ os.path.join(json_conf["dir"], file) for file in os.listdir(json_conf["dir"]) if file[-4:] == "json" ]
     if "group" in json_conf:
         for filepath in files:
             file = os.path.basename(filepath)
-            key = eval(subplot_conf["group"]["code"])
+            key = eval(json_conf["group"]["code"])
             dct[key].append(filepath)
     else: 
-        dct[subplot_conf["calculate"]] = files
+        dct[""] = files
 
     for key, values in dct.items():
         data = calculate_the_plot(values)
-        ax.plot(data[subplot_conf["calculate"]], label=key)
-        ax.legend()
-    ax.set(xlabel=subplot_conf["x_label"], ylabel=subplot_conf["y_label"], title=subplot_conf["title"])
+        for calculation in json_conf["calculate"]:
+            latest, = ax.plot(data[calculation], label=f"{calculation[0].upper()}{calculation[1:]} {key}")
+        if "fill" in json_conf and json_conf["fill"]:
+            color = latest.get_color() if len(json_conf["calculate"]) == 1 else "#A555EC"
+            plt.fill_between(latest.get_xdata(), data["min"], data["max"], alpha=0.2, facecolor=color, edgecolor=color, label=f"Min-Max Region {key}")
+    ax.legend()
+    ax.set(xlabel=json_conf["x_label"], ylabel=json_conf["y_label"], title=json_conf["title"])
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:
         PLOT_JSON_FILE = sys.argv[1]
     PLOT_JSON = get_plot_configure(PLOT_JSON_FILE)
     if len(PLOT_JSON["subplots"]) <= 1:
-        figure(figsize=(21, 6), dpi=80)
+        fig, ax = plt.subplots(1, 1, sharex=True, sharey=True, figsize=(21, 6), dpi=80)
+        handle_subplot(ax, PLOT_JSON["subplots"][0])
     else:
         fig, axes = plt.subplots(1, len(PLOT_JSON["subplots"]), sharex=True, sharey=True, figsize=(21, 6), dpi=80)
         for idx, subplot_conf in enumerate(PLOT_JSON["subplots"]):

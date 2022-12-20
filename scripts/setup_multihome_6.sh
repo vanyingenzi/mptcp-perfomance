@@ -146,7 +146,7 @@ for interface in $(get_interfaces); do
             ip -6 rule add from $(get_address_without_prefix ${address_prefix}) table ${table_number}
             echo_command "ip -6 route add ${address_prefix} dev ${interface} scope link table ${table_number}"
             ip -6 route add ${address_prefix} dev ${interface} scope link table ${table_number}
-            echo_command "ip mptcp endpoint add $(get_address_without_prefix ${address_prefix}) id ${ENDPOINT_ID} dev ${interface} subflow signal"
+            echo_command "ip mptcp endpoint add $(get_address_without_prefix ${address_prefix}) id ${ENDPOINT_ID} dev ${interface} subflow signal fullmesh"
             ip mptcp endpoint add $(get_address_without_prefix ${address_prefix}) id ${ENDPOINT_ID} dev ${interface} subflow signal
             let ENDPOINT_ID=ENDPOINT_ID+1
         done

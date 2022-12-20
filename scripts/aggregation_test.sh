@@ -1,12 +1,12 @@
 #!/bin/bash
 function Help {
-    echo "Runs a TCP Iperf perfomance analysis." >&2
+    echo "Runs a MPTCP iPerf perfomance analysis." >&2
     echo >&2
     echo "Syntax: $0 [-d DEST] [-p PORT] [-n NUM] [-h]" >&2
     echo "options:" >&2
     echo "d DEST : DEST is the address of the Iperf server to connect to." >&2
     echo "p PORT : PORT is the port of the Iperf server to connect to." >&2
-    echo "n NUM  : NUM indicates the number of times we have to perfom the test for each mptcp endpoint."
+    echo "n NUM  : NUM indicates the number of times we have to perfom the test for each mptcp endpoint." >&2
     echo "h : Prints this help." >&2
 }
 
@@ -63,20 +63,19 @@ function get_mptcp_endpoints {
     echo `ip mptcp endpoint | awk -F " " '{print $1}'`
 }
 
-DEST_FOLDER="./logs/tcp_baseline/${DEST_ADDRESS//[:]/_}"
-[ ! -d "./logs/tcp_baseline" ] && mkdir "./logs/tcp_baseline"
+DEST_FOLDER="./logs/aggregation"
+[ ! -d "./logs/aggregation" ] && mkdir "./logs/aggregation"
 [ ! -d ${DEST_FOLDER} ] && mkdir ${DEST_FOLDER}
 
-for endpoint in $(get_mptcp_endpoints)
-do 
-    for iter in $(seq 1 ${NUMBER_OF_TIMES})
-    do
-        [ -f "${DEST_FOLDER}/${endpoint//[:]/_}-${iter}.json" ] && rm "${DEST_FOLDER}/${endpoint//[:]/_}-${iter}.json"
-        echo_command "./iperf/src/iperf3 -c ${DEST_ADDRESS} -J -p ${DPORT} -B ${endpoint} -t 2 --logfile ${DEST_FOLDER}/${endpoint//[:]/_}-${iter}.json"
-        ./iperf/src/iperf3 -c ${DEST_ADDRESS} -J -p ${DPORT} -B ${endpoint} -t 120 --logfile "${DEST_FOLDER}/${endpoint//[:]/_}-${iter}.json"
-        exit_code=$?
-        [ "${exit_code}" != "0" ] && echo_error "An error occured during the last execution : ${exit_code}" && exit ${exit_code} 
-    done
-    echo_command "sleep 5 ..."
-    sleep 5
-done 
+
+for iter in $(seq 1 ${NUMBER_OF_TIMES})
+do
+    TARGET_FILE="${DEST_FOLDER}/${iter}.json"
+    [ -f ${TARGET_FILE} ] && rm ${TARGET_FILE}
+    echo_command "./iperf/src/iperf3 -c ${DEST_ADDRESS} -J -m -p ${DPORT} -t 2 --logfile ${TARGET_FILE}"
+    ./iperf/src/iperf3 -c ${DEST_ADDRESS} -J -m -p ${DPORT}-t 10 --logfile ${TARGET_FILE}
+    exit_code=$?
+    [ "${exit_code}" != "0" ] && echo_error "An error occured during the last execution : ${exit_code}" && exit ${exit_code}
+    echo_command "sleep 60 ..."
+    sleep 60
+done

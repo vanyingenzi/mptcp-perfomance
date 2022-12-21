@@ -1,4 +1,10 @@
 #!/bin/bash
+
+if [[ $EUID -ne 0 ]]; then
+   echo "You must run this script as root."
+   exit 1
+fi
+
 function Help {
     echo "Runs a MPTCP iPerf perfomance analysis." >&2
     echo >&2
@@ -10,25 +16,23 @@ function Help {
     echo "h : Prints this help." >&2
 }
 
-YELLOW='\033[0;33m'     
-RED='\033[0;31m'
-NC='\033[0m'
 DEST_ADDRESS=""
 DPORT=""
-BIND_ADDRESS=""
 NUMBER_OF_TIMES="1"
 
+YELLOW=$(tput setaf 3)    
+RED=$(tput setaf 1)
+NC=$(tput sgr0)
 
 function echo_command {
-    printf "${YELLOW}${1}${NC}\n" >&2
+    printf "%s\n" "${YELLOW}${1}${NC}" >&2
 }
 
 function echo_error {
-    printf "${RED}${1}${NC}\n" >&2
+    printf "%s\n" "${RED}${1}${NC}" >&2
 }
 
-
-while getopts "d:b:p:n:h" option; do
+while getopts "d:p:n:h" option; do
     case $option in
         h)
             Help
@@ -39,8 +43,6 @@ while getopts "d:b:p:n:h" option; do
             NUMBER_OF_TIMES=${OPTARG} ;;
         d)
             DEST_ADDRESS=${OPTARG} ;;
-        b)
-            BIND_ADDRESS=${OPTARG} ;;
         \?)
             echo "Error: Invalid option" >&2
             Help
@@ -60,7 +62,7 @@ fi
 #   DESCRIPTION:  Returns a list of all mptcp endpoint 
 #-------------------------------------------------------------------------------
 function get_mptcp_endpoints {
-    echo `ip mptcp endpoint | awk -F " " '{print $1}'`
+    ip mptcp endpoint | awk -F " " '{print $1}'
 }
 
 DEST_FOLDER="./logs/aggregation"
@@ -68,14 +70,25 @@ DEST_FOLDER="./logs/aggregation"
 [ ! -d ${DEST_FOLDER} ] && mkdir ${DEST_FOLDER}
 
 
-for iter in $(seq 1 ${NUMBER_OF_TIMES})
+for iter in $(seq 1 "${NUMBER_OF_TIMES}")
 do
-    TARGET_FILE="${DEST_FOLDER}/${iter}.json"
-    [ -f ${TARGET_FILE} ] && rm ${TARGET_FILE}
-    echo_command "./iperf/src/iperf3 -c ${DEST_ADDRESS} -J -m -p ${DPORT} -t 2 --logfile ${TARGET_FILE}"
-    ./iperf/src/iperf3 -c ${DEST_ADDRESS} -J -m -p ${DPORT}-t 10 --logfile ${TARGET_FILE}
+    IPERF_LOG_FILE="${DEST_FOLDER}/${iter}.json" 
+    [ -f "${IPERF_LOG_FILE}" ]  && rm "${IPERF_LOG_FILE}"
+    MONITOR_FILE="${DEST_FOLDER}/${iter}.txt" 
+    [ -f "${MONITOR_FILE}" ] && rm "${MONITOR_FILE}"
+    
+    echo_command "ip mptcp monitor > ${MONITOR_FILE} &"
+    ip mptcp monitor > "${MONITOR_FILE}" &
+    monitor_pid=$!
+
+    echo_command "./iperf/src/iperf3 -c ${DEST_ADDRESS} -J -6 -R -m -p ${DPORT} -t 2 --logfile ${IPERF_LOG_FILE}"
+    ./iperf/src/iperf3 -c "${DEST_ADDRESS}" -J -6 -R -m -p "${DPORT}" -t 10 --logfile "${IPERF_LOG_FILE}"
     exit_code=$?
+
+    kill -SIGINT "${monitor_pid}" > /dev/null
+
     [ "${exit_code}" != "0" ] && echo_error "An error occured during the last execution : ${exit_code}" && exit ${exit_code}
+
     echo_command "sleep 60 ..."
     sleep 60
 done

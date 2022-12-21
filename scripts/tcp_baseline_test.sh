@@ -1,4 +1,10 @@
 #!/bin/bash
+
+if [[ $EUID -ne 0 ]]; then
+   echo "You must run this script as root."
+   exit 1
+fi
+
 function Help {
     echo "Runs a TCP iPerf perfomance analysis." >&2
     echo >&2
@@ -10,25 +16,25 @@ function Help {
     echo "h : Prints this help." >&2
 }
 
-YELLOW='\033[0;33m'     
-RED='\033[0;31m'
-NC='\033[0m'
 DEST_ADDRESS=""
 DPORT=""
-BIND_ADDRESS=""
 NUMBER_OF_TIMES="1"
 
 
+YELLOW=$(tput setaf 3)    
+RED=$(tput setaf 1)
+NC=$(tput sgr0)
+
 function echo_command {
-    printf "${YELLOW}${1}${NC}\n" >&2
+    printf "%s\n" "${YELLOW}${1}${NC}" >&2
 }
 
 function echo_error {
-    printf "${RED}${1}${NC}\n" >&2
+    printf "%s\n" "${RED}${1}${NC}" >&2
 }
 
 
-while getopts "d:b:p:n:h" option; do
+while getopts "d:p:n:h" option; do
     case $option in
         h)
             Help
@@ -39,8 +45,6 @@ while getopts "d:b:p:n:h" option; do
             NUMBER_OF_TIMES=${OPTARG} ;;
         d)
             DEST_ADDRESS=${OPTARG} ;;
-        b)
-            BIND_ADDRESS=${OPTARG} ;;
         \?)
             echo "Error: Invalid option" >&2
             Help
@@ -60,23 +64,24 @@ fi
 #   DESCRIPTION:  Returns a list of all mptcp endpoint 
 #-------------------------------------------------------------------------------
 function get_mptcp_endpoints {
-    echo `ip mptcp endpoint | awk -F " " '{print $1}'`
+    ip mptcp endpoint | awk -F " " '{print $1}'
 }
 
 DEST_FOLDER="./logs/tcp_baseline/${DEST_ADDRESS//[:]/_}"
 [ ! -d "./logs/tcp_baseline" ] && mkdir "./logs/tcp_baseline"
-[ ! -d ${DEST_FOLDER} ] && mkdir ${DEST_FOLDER}
+[ ! -d "${DEST_FOLDER}" ] && mkdir "${DEST_FOLDER}"
 
 for endpoint in $(get_mptcp_endpoints)
 do 
-    for iter in $(seq 1 ${NUMBER_OF_TIMES})
+    for iter in $(seq 1 "${NUMBER_OF_TIMES}")
     do
-        [ -f "${DEST_FOLDER}/${endpoint//[:]/_}-${iter}.json" ] && rm "${DEST_FOLDER}/${endpoint//[:]/_}-${iter}.json"
-        echo_command "./iperf/src/iperf3 -c ${DEST_ADDRESS} -J -p ${DPORT} -B ${endpoint} -t 10 --logfile ${DEST_FOLDER}/${endpoint//[:]/_}-${iter}.json"
-        ./iperf/src/iperf3 -c ${DEST_ADDRESS} -J -p ${DPORT} -B ${endpoint} -t 10 --logfile "${DEST_FOLDER}/${endpoint//[:]/_}-${iter}.json"
-        exit_code=$?
+        IPERF_LOG_FILE="${DEST_FOLDER}/${endpoint//[:]/_}-${iter}.json"
+        [ -f "${IPERF_LOG_FILE}" ] && rm "${IPERF_LOG_FILE}"
+        echo_command "./iperf/src/iperf3 -c ${DEST_ADDRESS} -J -6 -R -p ${DPORT} -B ${endpoint} -t 120 --logfile ${IPERF_LOG_FILE}"
+        ./iperf/src/iperf3 -c "${DEST_ADDRESS}" -J -6 -R -p "${DPORT}" -B "${endpoint}" -t 120 --logfile "${IPERF_LOG_FILE}"
+        exit_code=$?        
         [ "${exit_code}" != "0" ] && echo_error "An error occured during the last execution : ${exit_code}" && exit ${exit_code} 
+        echo_command "sleep 10"
+        sleep 10
     done
-    echo_command "sleep 60 ..."
-    sleep 60
 done 

@@ -2,8 +2,8 @@
 #------------- Variables
 MAKE=$(shell which make)
 PRINTF=$(shell which printf)
-COLOR_ANNOUNCE='\033[0;36m'
-NC='\033[0m'
+COLOR_ANNOUNCE=$(tput setaf 4)
+NC=$(tput sgr0)
 PYTHON=$(shell which python3)
 #------------- 
 
@@ -13,7 +13,6 @@ all: setup
 setup: set-folders
 	apt -y install mptcpize
 	cd ./iperf && ./configure && $(MAKE)
-	ln -s ./iperf/src/iperf3 ./scripts/iperf3
 	chmod -R +x scripts/
 
 check-mptcp:
@@ -41,19 +40,28 @@ clean-logs:
 	fi
 
 run-tcp-baseline: 
-	@$(PRINTF) "${COLOR_ANNOUNCE}------------------ TCP Baseline (w/ 2001:6a8:308f:9:0:82ff:fe68:e519) ------------------${NC}\n"
+	@$(PRINTF) "%s\n" "${COLOR_ANNOUNCE}------------------ TCP Baseline (w/ 2001:6a8:308f:9:0:82ff:fe68:e519) ------------------${NC}"
 	./scripts/tcp_baseline_test.sh -d 2001:6a8:308f:9:0:82ff:fe68:e519 -p 80 -n 1
-	@$(PRINTF) "${COLOR_ANNOUNCE}------------------ TCP Baseline (w/ 2001:6a8:308f:9:0:82ff:fe68:e55c) ------------------${NC}\n"
+	@$(PRINTF) "%s\n" "${COLOR_ANNOUNCE}------------------ TCP Baseline (w/ 2001:6a8:308f:9:0:82ff:fe68:e55c) ------------------${NC}"
 	./scripts/tcp_baseline_test.sh -d 2001:6a8:308f:9:0:82ff:fe68:e55c -p 80 -n 1
-	@$(PRINTF) "${COLOR_ANNOUNCE}------------------ TCP Baseline (w/ 2001:6a8:308f:10:0:83ff:fe00:2) ------------------${NC}\n"
+	@$(PRINTF) "%s\n" "${COLOR_ANNOUNCE}------------------ TCP Baseline (w/ 2001:6a8:308f:10:0:83ff:fe00:2) ------------------${NC}"
 	./scripts/tcp_baseline_test.sh -d 2001:6a8:308f:10:0:83ff:fe00:2 -p 80 -n 1
 
 visualise-tcp-baseline:
 	@$(PYTHON) ./utils/json_throughput_plot.py ./utils/baseline_json_throughout_plot.json
 
 run-aggregation-test:
-	@$(PRINTF) "${COLOR_ANNOUNCE}------------------ Aggregation Test ------------------${NC}\n"
-	./scripts/aggregation_test.sh -d 2001:6a8:308f:9:0:82ff:fe68:e519 -p 80 -n 3
+	@$(PRINTF) "%s\n" "${COLOR_ANNOUNCE}------------------ Aggregation Test ------------------${NC}"
+	./scripts/aggregation_test.sh -d 2001:6a8:308f:9:0:82ff:fe68:e519 -p 80 -n 1
 
 visualise-aggregation-test:
 	@$(PYTHON) ./utils/json_throughput_plot.py ./utils/aggregation_json_throughout_plot.json
+
+run-link-failure-test:
+	@$(PRINTF) "%s\n" "${COLOR_ANNOUNCE}------------------ Link failure Test ------------------${NC}"
+	./scripts/link_failure_test.sh -d 2001:6a8:308f:9:0:82ff:fe68:e519 -p 80 -n 1 -t 10
+
+visualise-link-failure-test:
+	@$(PYTHON) ./utils/json_throughput_plot.py ./utils/link_failure_throughput_plot.json
+
+run-all: run-tcp-baseline run-aggregation-test run-link-failure-test

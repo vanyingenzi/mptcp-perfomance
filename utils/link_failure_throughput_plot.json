@@ -1,0 +1,37 @@
+{
+    "title": "MPTCP Links Failure Simulation",
+    "subplots": [
+        {
+            "dir": "./logs/link-failure",
+            "title": "The throughput along the transfer with Multipath TCP with link failures", 
+            "y_label": "Throughput [bits/sec]",
+            "x_label": "Time[s]",
+            "calculate": ["mean"], 
+            "fill": true,
+            "lines": {
+                "x": [
+                    {
+                        "label" : "Interface enp0s31f6 failure",
+                        "value" : 30, 
+                        "color" : "#FF0000"
+                    },
+                    {
+                        "label" : "Interface enp0s31f6 recovery",
+                        "value" : 40, 
+                        "color" : "#FF0000"
+                    },
+                    {
+                        "label" : "Interface wlp58s0 failure",
+                        "value" : 70, 
+                        "color" : "#38E54D"
+                    }, 
+                    {
+                        "label" : "Interface wlp58s0 recovery",
+                        "value" : 80, 
+                        "color" : "#38E54D"
+                    }
+                ]
+            }
+        }
+    ]
+}

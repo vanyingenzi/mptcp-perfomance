@@ -1,13 +1,22 @@
 {
-    "title": "MPTCP links aggregation tests",
+    "title": "MPTCP with a fullmesh setup",
     "subplots": [
         {
-            "dir": "./logs/aggregation",
+            "dir": "./logs/aggregation_fullmesh",
             "title": "The throughput along the transfer with Multipath TCP", 
             "y_label": "Throughput [bits/sec]",
             "x_label": "Time[s]",
             "calculate": ["mean", "median"], 
-            "fill": true
+            "fill": true, 
+            "lines": {
+                "y":[
+                    {
+                        "label" : "Expected throughput",
+                        "value" : 1.8e8, 
+                        "color" : "red"
+                    }
+                ]
+            }
         }
     ]
 }

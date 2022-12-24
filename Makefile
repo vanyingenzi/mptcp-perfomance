@@ -33,29 +33,23 @@ clean: clean-logs
 	cd ./iperf && $(MAKE) clean
 	rm ./scripts/iperf3 
 
-clean-logs:
-	if [ -d "./logs/" ]; then\
-		rm -fr logs/*;\
-		rmdir logs;\
-	fi
-
 run-tcp-baseline: 
 	@$(PRINTF) "%s\n" "${COLOR_ANNOUNCE}------------------ TCP Baseline (w/ 2001:6a8:308f:9:0:82ff:fe68:e519) ------------------${NC}"
-	./scripts/tcp_baseline_test.sh -d 2001:6a8:308f:9:0:82ff:fe68:e519 -p 80 -n 1
+	./scripts/tcp_baseline_test.sh -d 2001:6a8:308f:9:0:82ff:fe68:e519 -p 80 -n 15
 	@$(PRINTF) "%s\n" "${COLOR_ANNOUNCE}------------------ TCP Baseline (w/ 2001:6a8:308f:9:0:82ff:fe68:e55c) ------------------${NC}"
-	./scripts/tcp_baseline_test.sh -d 2001:6a8:308f:9:0:82ff:fe68:e55c -p 80 -n 1
+	./scripts/tcp_baseline_test.sh -d 2001:6a8:308f:9:0:82ff:fe68:e55c -p 80 -n 15
 	@$(PRINTF) "%s\n" "${COLOR_ANNOUNCE}------------------ TCP Baseline (w/ 2001:6a8:308f:10:0:83ff:fe00:2) ------------------${NC}"
-	./scripts/tcp_baseline_test.sh -d 2001:6a8:308f:10:0:83ff:fe00:2 -p 80 -n 1
+	./scripts/tcp_baseline_test.sh -d 2001:6a8:308f:10:0:83ff:fe00:2 -p 80 -n 15
 
 visualise-tcp-baseline:
-	@$(PYTHON) ./utils/json_throughput_plot.py ./utils/baseline_json_throughout_plot.json
+	@$(PYTHON) ./utils/json_throughput_plot.py ./utils/baseline_json_throughput_plot.json
 
 run-aggregation-test:
 	@$(PRINTF) "%s\n" "${COLOR_ANNOUNCE}------------------ Aggregation Test ------------------${NC}"
-	./scripts/aggregation_test.sh -d 2001:6a8:308f:9:0:82ff:fe68:e519 -p 80 -n 1
+	./scripts/aggregation_test.sh -d 2001:6a8:308f:9:0:82ff:fe68:e519 -p 80 -n 15
 
 visualise-aggregation-test:
-	@$(PYTHON) ./utils/json_throughput_plot.py ./utils/aggregation_json_throughout_plot.json
+	@$(PYTHON) ./utils/json_throughput_plot.py ./utils/aggregation_json_throughput_plot.json
 
 run-link-failure-test:
 	@$(PRINTF) "%s\n" "${COLOR_ANNOUNCE}------------------ Link failure Test ------------------${NC}"

@@ -53,6 +53,8 @@ def handle_subplot(ax: plt.Axes, json_conf: Dict[str, any]):
             dct[key].append(filepath)
     else: 
         dct[""] = files
+
+    means = []
         
     for key, values in dct.items():
         data = calculate_the_plot(values)
@@ -64,18 +66,21 @@ def handle_subplot(ax: plt.Axes, json_conf: Dict[str, any]):
         if "lines" in json_conf:
             if "x" in json_conf["lines"]:
                 for line in json_conf["lines"]["x"]:
-                    ax.axvline(x=line["value"], color=line["color"], linestyle="-.")
-                    ax.annotate(line["label"], xy=(line["value"], line["value"]), xytext=(line["value"]-5, data["max"][random.randint(0, len(data["max"]))]))
+                    ax.axvline(x=line["value"], color=line["color"], linestyle="-.", label=line["label"])
             if "y" in json_conf["lines"]:
                 for line in json_conf["lines"]["y"]:
-                    ax.axhline(y=line["value"], color=line["color"], linestyle="-.")
+                    ax.axhline(y=line["value"], color=line["color"], linestyle="-.", label=line["label"])
+        means.append(np.mean(data["mean"]))
+    print(f"mean : {np.mean(means)}")
     ax.grid(True)
     ax.legend()
     ax.set(xlabel=json_conf["x_label"], ylabel=json_conf["y_label"], title=json_conf["title"])
+    return ax.get_legend_handles_labels()
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:
         PLOT_JSON_FILE = sys.argv[1]
+    lines, labels = [], []
     PLOT_JSON = get_plot_configure(PLOT_JSON_FILE)
     if len(PLOT_JSON["subplots"]) == 1:
         fig, ax = plt.subplots(1, 1, sharex=True, sharey=True, figsize=(21, 6), dpi=80)
@@ -84,5 +89,5 @@ if __name__ == '__main__':
         fig, axes = plt.subplots(1, len(PLOT_JSON["subplots"]), sharex=True, sharey=True, figsize=(21, 6), dpi=80)
         for idx, subplot_conf in enumerate(PLOT_JSON["subplots"]):
             handle_subplot(axes[idx], subplot_conf)
-        fig.suptitle(PLOT_JSON["title"])        
+    fig.suptitle(PLOT_JSON["title"])  
     plt.show()

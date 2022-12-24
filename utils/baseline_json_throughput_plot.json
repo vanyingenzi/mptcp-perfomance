@@ -2,34 +2,37 @@
     "title": "TCP Baseline tests",
     "subplots": [
         {
-            "dir": "./logs/tcp_baseline/2001_6a8_308f_9_0_82ff_fe68_e55c",
-            "title": "Server's endpoint 2001_6a8_308f_10_0_83ff_fe00_2", 
-            "y_label": "Throughput [bits/sec]",
-            "x_label": "Time[s]",
-            "group": {
-                "code": "file.split('-')[0]"
-            },
-            "calculate": ["mean"]
-        }, 
-        {
             "dir": "./logs/tcp_baseline/2001_6a8_308f_9_0_82ff_fe68_e519", 
-            "title": "Server's endpoint 2001_6a8_308f_10_0_83ff_fe00_2", 
+            "title": "Server's endpoint 2001:6a8:308f:9:0:82ff:fe68:e519", 
             "y_label": "Throughput [bits/sec]",
             "x_label": "Time[s]", 
+            "fill": true,
             "group": {
-                "code": "file.split('-')[0]"
+                "code": "file.split('-')[0].replace('_', ':')"
             },
-            "calculate": ["mean"]
+            "calculate": ["median"]
+        }, 
+        {
+            "dir": "./logs/tcp_baseline/2001_6a8_308f_9_0_82ff_fe68_e55c",
+            "title": "Server's endpoint 2001:6a8:308f:9:0:82ff:fe68:e55c", 
+            "y_label": "Throughput [bits/sec]",
+            "x_label": "Time[s]",
+            "fill": true,
+            "group": {
+                "code": "file.split('-')[0].replace('_', ':')"
+            },
+            "calculate": ["median"]
         }, 
         {
             "dir": "./logs/tcp_baseline/2001_6a8_308f_10_0_83ff_fe00_2", 
-            "title": "Server's endpoint 2001_6a8_308f_10_0_83ff_fe00_2",
+            "title": "Server's endpoint 2001:6a8:308f:10:0:83ff:fe00:2",
             "y_label": "Throughput [bits/sec]",
             "x_label": "Time[s]", 
+            "fill": true,
             "group": {
-                "code": "file.split('-')[0]"
+                "code": "file.split('-')[0].replace('_', ':')"
             },
-            "calculate": ["mean"]
+            "calculate": ["median"]
         }
     ]
 }

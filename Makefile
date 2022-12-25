@@ -44,12 +44,15 @@ run-tcp-baseline:
 visualise-tcp-baseline:
 	@$(PYTHON) ./utils/json_throughput_plot.py ./utils/baseline_json_throughput_plot.json
 
-run-aggregation-test:
+run-aggregation-fullmesh-test:
 	@$(PRINTF) "%s\n" "${COLOR_ANNOUNCE}------------------ Aggregation Test ------------------${NC}"
-	./scripts/aggregation_test.sh -d 2001:6a8:308f:9:0:82ff:fe68:e519 -p 80 -n 15
+	./scripts/aggregation_test.sh -d 2001:6a8:308f:9:0:82ff:fe68:e519 -p 80 -n 15 -f ./logs/aggregation_fullmesh
 
-visualise-aggregation-test:
+visualise-aggregation-fullmesh-test-throughput:
 	@$(PYTHON) ./utils/json_throughput_plot.py ./utils/aggregation_json_throughput_plot.json
+
+visualise-aggregation-fullmesh-test-bandwith-usage:
+	@$(PYTHON) ./utils/pcap_plot.py ./utils/aggregation_pcap_subflow_plot.json
 
 run-link-failure-test:
 	@$(PRINTF) "%s\n" "${COLOR_ANNOUNCE}------------------ Link failure Test ------------------${NC}"

@@ -12,7 +12,7 @@
                 "y":[
                     {
                         "label" : "Expected throughput",
-                        "value" : 1.8e8, 
+                        "value" : 2e8, 
                         "color" : "red"
                     }
                 ]

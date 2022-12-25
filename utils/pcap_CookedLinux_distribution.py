@@ -18,7 +18,7 @@ def process_pcap(file_name: str) -> List[ProcessingPacket]:
                                                     tcp_pkt.sport, 
                                                     tcp_pkt.dport, 
                                                     float(packet.time * 1e6),
-                                                    len(tcp_pkt.payload) * 8 # To convert to bits
+                                                    ip_pkt.plen * 8 # To convert to bits
                                                 )
         packets.append(process_packet)
 

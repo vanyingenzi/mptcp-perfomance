@@ -43,7 +43,7 @@ def calculate_the_plot(PCAP_FILES):
         for idx, dataset in enumerate(data):
             new_timestamps, new_data = resample_data_by_interval(  dataset.timestamps, dataset.payload_len )
             if len(new_data) > 120:
-                new_data = new_data[:120]
+                new_data = new_data[:120]                
             per_subflow[dataset.addresses].append(new_data)
     to_return = {}
     for key, value in per_subflow.items():
@@ -68,7 +68,13 @@ def handle_subplot(ax: plt.Axes, json_conf: Dict[str, any]):
             for calculation in json_conf["calculate"]:
                 subflow_label = "<->".join(data_key)
                 latest, = ax.plot(data_value[calculation], label=f"{calculation[0].upper()}{calculation[1:]} {subflow_label}")
-
+        if "lines" in json_conf:
+            if "x" in json_conf["lines"]:
+                for line in json_conf["lines"]["x"]:
+                    ax.axvline(x=line["value"], color=line["color"], linestyle="-." if "failure" in line["label"] else "-", label=line["label"])
+            if "y" in json_conf["lines"]:
+                for line in json_conf["lines"]["y"]:
+                    ax.axhline(y=line["value"], color=line["color"], linestyle="-.", label=line["label"])
     ax.grid(True)
     ax.legend()
     ax.set(xlabel=json_conf["x_label"], ylabel=json_conf["y_label"], title=json_conf["title"])

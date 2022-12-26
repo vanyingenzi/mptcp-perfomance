@@ -66,7 +66,7 @@ def handle_subplot(ax: plt.Axes, json_conf: Dict[str, any]):
         if "lines" in json_conf:
             if "x" in json_conf["lines"]:
                 for line in json_conf["lines"]["x"]:
-                    ax.axvline(x=line["value"], color=line["color"], linestyle="-.", label=line["label"])
+                    ax.axvline(x=line["value"], color=line["color"], linestyle="-." if "failure" in line["label"] else "-", label=line["label"])
             if "y" in json_conf["lines"]:
                 for line in json_conf["lines"]["y"]:
                     ax.axhline(y=line["value"], color=line["color"], linestyle="-.", label=line["label"])

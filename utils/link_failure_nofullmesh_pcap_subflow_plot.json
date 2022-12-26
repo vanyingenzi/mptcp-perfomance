@@ -1,0 +1,36 @@
+{
+    "title": "MPTCP link-failure with no fullmesh setup, per subflow bandwidth usage",
+    "subplots": [
+        {
+            "dir": "./logs/link-failure-nofullmesh",
+            "title": "The bandwidth usage along the transfer for each subflow", 
+            "y_label": "Bandwidth usage [bits/sec]",
+            "x_label": "Time[s]",
+            "calculate": ["median"], 
+            "lines": {
+                "x": [
+                    {
+                        "label" : "Interface enp0s31f6 failure",
+                        "value" : 30, 
+                        "color" : "#FF0000"
+                    },
+                    {
+                        "label" : "Interface enp0s31f6 recovery",
+                        "value" : 40, 
+                        "color" : "#FF0000"
+                    },
+                    {
+                        "label" : "Interface wlp58s0 failure",
+                        "value" : 70, 
+                        "color" : "#FC0FC0"
+                    }, 
+                    {
+                        "label" : "Interface wlp58s0 recovery",
+                        "value" : 80, 
+                        "color" : "#FC0FC0"
+                    }
+                ]
+            }
+        }
+    ]
+}

@@ -1,0 +1,22 @@
+{
+    "title": "MPTCP with a non fullmesh setup",
+    "subplots": [
+        {
+            "dir": "./logs/aggregation_nofullmesh",
+            "title": "The throughput along the transfer with Multipath TCP", 
+            "y_label": "Throughput [bits/sec]",
+            "x_label": "Time[s]",
+            "calculate": ["mean", "median"], 
+            "fill": true, 
+            "lines": {
+                "y":[
+                    {
+                        "label" : "Expected throughput",
+                        "value" : 2e8, 
+                        "color" : "red"
+                    }
+                ]
+            }
+        }
+    ]
+}

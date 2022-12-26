@@ -1,8 +1,8 @@
 {
-    "title": "MPTCP Links Failure Simulation",
+    "title": "MPTCP Links Failure simulation on fullmesh setup",
     "subplots": [
         {
-            "dir": "./logs/link-failure",
+            "dir": "./logs/link-failure-fullmesh",
             "title": "The throughput along the transfer with Multipath TCP with link failures", 
             "y_label": "Throughput [bits/sec]",
             "x_label": "Time[s]",

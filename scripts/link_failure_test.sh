@@ -15,6 +15,7 @@ function Help {
     echo "n NUM     : NUM indicates the number of times we have to perfom the test for each mptcp endpoint." >&2
     echo "t DELAY   : DELAY indicates time of the link failure. This is repeated for each link." >&2
     echo "o OFFSET  : The amount of seconds from the start of the transfer to start simulating link failures. Default 30."
+    echo "f FOLDER : This represents the directory to which save the results." >&2
     echo "h : Prints this help." >&2
 }
 
@@ -35,8 +36,9 @@ DPORT=""
 DELAY=""
 NUMBER_OF_TIMES=""
 OFFSET=30
+DEST_FOLDER=""
 
-while getopts "d:p:n:t:o:h" option; do
+while getopts "d:p:n:t:o:f:h" option; do
     case $option in
         d) 
             DEST_ADDRESS=${OPTARG} ;;
@@ -48,18 +50,21 @@ while getopts "d:p:n:t:o:h" option; do
             DELAY=${OPTARG} ;;
         o) 
             OFFSET=${OPTARG} ;;
+        f) 
+            DEST_FOLDER=${OPTARG} ;;
         h)  # display Help
             Help
             exit ;;
         \?) # incorrect option
             echo "Error: Invalid option" >&2
+            Help
             exit 1 ;;
     esac
 done
 
 # mandatory arguments
-if [ ! "${DEST_ADDRESS}" ] || [ ! "${DPORT}" ] || [ ! "${NUMBER_OF_TIMES}" ] || [ ! "${DELAY}" ]; then
-    echo "Arguments [-d DEST] [-p DPORT] [-n NUM] must be provided."
+if [ ! "${DEST_ADDRESS}" ] || [ ! "${DPORT}" ] || [ ! "${NUMBER_OF_TIMES}" ] || [ ! "${DELAY}" ] || [ ! "${DEST_FOLDER}" ] ; then
+    echo "Arguments [-d DEST] [-p DPORT] [-n NUM] [-t DELAY] [-f FOLDER] must be provided."
     Help
     exit 1
 fi
@@ -87,8 +92,6 @@ function simulate_link_failure {
     ip link set up "${1}"
 }
 
-DEST_FOLDER="./logs/link-failure"
-[ ! -d "./logs/link-failure" ] && mkdir "./logs/link-failure"
 [ ! -d "${DEST_FOLDER}" ] && mkdir "${DEST_FOLDER}"
 
 for iter in $(seq 1 "${NUMBER_OF_TIMES}")
@@ -97,10 +100,16 @@ do
     [ -f "${IPERF_LOG_FILE}" ] && rm "${IPERF_LOG_FILE}"
     MONITOR_FILE="${DEST_FOLDER}/${iter}.txt" 
     [ -f "${MONITOR_FILE}" ] && rm "${MONITOR_FILE}"
+    TCPDUMP_FILE="${DEST_FOLDER}/${iter}.pcap"
+    [ -f "${TCPDUMP_FILE}" ] && rm "${TCPDUMP_FILE}"
 
     echo_command "ip mptcp monitor > ${MONITOR_FILE} &"
     ip mptcp monitor > "${MONITOR_FILE}" &
     monitor_pid=$!
+
+    echo_command "tcpdump -i any -s 96 -U -w ${TCPDUMP_FILE} '(host 2001:6a8:308f:9:0:82ff:fe68:e519 or host 2001:6a8:308f:9:0:82ff:fe68:e55c or host 2001:6a8:308f:10:0:83ff:fe00:2)' &"
+    tcpdump -i any -s 96 -U -w ${TCPDUMP_FILE} '(host 2001:6a8:308f:9:0:82ff:fe68:e519 or host 2001:6a8:308f:9:0:82ff:fe68:e55c or host 2001:6a8:308f:10:0:83ff:fe00:2)' 2>/dev/null &
+    tcpdump_pid=$!
 
     echo_command "./iperf/src/iperf3 -c ${DEST_ADDRESS} -J -6 -R -m -p ${DPORT} -t 120 --logfile ${IPERF_LOG_FILE}"
     ./iperf/src/iperf3 -c "${DEST_ADDRESS}" -J -6 -R -m -p "${DPORT}" -t 120 --logfile "${IPERF_LOG_FILE}" & # Launch Iperf
@@ -123,6 +132,8 @@ do
     kill -SIGINT "${monitor_pid}" > /dev/null
 
     [ "${exit_code}" != "0" ] && echo_error "An error occured during the last execution : ${exit_code}" && exit ${exit_code}
-    echo_command "sleep 60 ..."
-    sleep 60
+    echo_command "sleep 30 ..."
+    sleep 30
+
+    kill -SIGKILL "${tcpdump_pid}" 1>/dev/null 2>&1
 done

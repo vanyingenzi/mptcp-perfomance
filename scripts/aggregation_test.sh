@@ -14,7 +14,7 @@ function Help {
     echo "p PORT : PORT is the port of the Iperf server to connect to." >&2
     echo "n NUM  : NUM indicates the number of times we have to perfom the test for each mptcp endpoint." >&2
     echo "b BIND : BIND is the host's address to bind to when perfoming the iperf test." >&2
-    echo "f FOLDER : This represents the directory to which save the results."
+    echo "f FOLDER : This represents the directory to which save the results." >&2
     echo "h : Prints this help." >&2
 }
 
@@ -90,7 +90,7 @@ do
     ip mptcp monitor > "${MONITOR_FILE}" &
     monitor_pid=$!
     
-    echo_command "tcpdump -i any -s 96 -U -w ${TCPDUMP_FILE} '(host 2001:6a8:308f:9:0:82ff:fe68:e519 or host 2001:6a8:308f:9:0:82ff:fe68:e55c or host 2001:6a8:308f:10:0:83ff:fe00:2)'"
+    echo_command "tcpdump -i any -s 96 -U -w ${TCPDUMP_FILE} '(host 2001:6a8:308f:9:0:82ff:fe68:e519 or host 2001:6a8:308f:9:0:82ff:fe68:e55c or host 2001:6a8:308f:10:0:83ff:fe00:2)' &"
     tcpdump -i any -s 96 -U -w ${TCPDUMP_FILE} '(host 2001:6a8:308f:9:0:82ff:fe68:e519 or host 2001:6a8:308f:9:0:82ff:fe68:e55c or host 2001:6a8:308f:10:0:83ff:fe00:2)' 2>/dev/null &
     tcpdump_pid=$!
 
